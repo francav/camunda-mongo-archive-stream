@@ -7,7 +7,6 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.history.HistoryLevel;
-import org.camunda.bpm.engine.impl.history.handler.CompositeDbHistoryEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,13 +18,10 @@ public class CustomProcessEnginePlugin implements ProcessEnginePlugin {
     @Autowired
     private CustomHistoryEventHandler customHistoryEventHandler;
 
-
     @Override
-    public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration)
-    {
+    public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
         List<HistoryLevel> customHistoryLevels = processEngineConfiguration.getCustomHistoryLevels();
-        if (customHistoryLevels == null)
-        {
+        if (customHistoryLevels == null) {
             customHistoryLevels = new ArrayList<>();
             processEngineConfiguration.setCustomHistoryLevels(customHistoryLevels);
         }
@@ -33,11 +29,9 @@ public class CustomProcessEnginePlugin implements ProcessEnginePlugin {
     }
 
     @Override
-    public void postInit(ProcessEngineConfigurationImpl processEngineConfiguration)
-    {
+    public void postInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
         processEngineConfiguration.setHistoryEventHandler(
-            new CompositeDbHistoryEventHandler(customHistoryEventHandler)
-        );
+                customHistoryEventHandler);
     }
 
     @Override
