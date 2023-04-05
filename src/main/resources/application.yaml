@@ -11,9 +11,6 @@ camunda:
       password: demo
     history-level: "no-sql-history"
 
-management.endpoints.web.exposure.include: prometheus, health
-management.endpoint.health.show-details: always
-
 data:
   mongodb:
     host: localhost
