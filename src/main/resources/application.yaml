@@ -10,8 +10,9 @@ camunda:
       id: demo
       password: demo
     history-level: "no-sql-history"
-
-data:
-  mongodb:
-    host: localhost
-    port: 27017
+    
+spring:
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017

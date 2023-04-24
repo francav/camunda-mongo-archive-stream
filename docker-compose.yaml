@@ -1,0 +1,75 @@
+version: '3.7'
+
+x-redash-service:
+    &redash-service
+    image: redash/redash:latest
+    depends_on:
+        - postgres
+        - redis
+    env_file: .env        
+    restart: always
+
+services:
+
+    mongodb:
+        image: mongo:4.4.20
+        ports:
+            - 27017:27017
+        healthcheck:
+            test: mongosh --eval 'db.stats().ok' --quiet
+            interval: 10s
+            retries: 3
+            start_period: 5s
+            timeout: 10s
+
+    camunda:
+        build:
+            context: .
+        ports:
+            - 8080:8080
+        links:
+            - mongodb
+        depends_on:
+            mongodb:
+                condition: service_healthy
+
+    server:
+        <<: *redash-service
+        command: server
+        ports:
+            - '7001:5000'
+        environment:
+            REDASH_WEB_WORKERS: 4
+            REDASH_MULTI_ORG: ${REDASH_MULTI_ORG:-false}
+    scheduler:
+        <<: *redash-service
+        command: scheduler
+        depends_on:
+            - server
+    scheduled_worker:
+        <<: *redash-service
+        command: worker
+    adhoc_worker:
+        <<: *redash-service
+        command: worker
+    worker:
+        <<: *redash-service
+        command: worker
+        environment:
+            QUEUES: "periodic emails default"
+            WORKERS_COUNT: 1
+        depends_on:
+            - server
+    redis:
+        image: redis:6-alpine
+        restart: always
+    postgres:
+        image: postgres:9.6-alpine
+        ports:
+            - '7432:5432'
+        environment:    
+            POSTGRES_HOST_AUTH_METHOD: "trust"            
+        restart: always
+        env_file: .env
+        volumes:
+            - ./postgres/analytics:/var/lib/postgresql/data
